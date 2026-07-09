@@ -2,10 +2,18 @@
   "name": "rnaseq-control-plane",
   "private": true,
   "version": "0.1.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "workspaces": [
     "apps/web",
     "packages/contracts"
   ],
+  "overrides": {
+    "next": {
+      "postcss": "8.5.16"
+    }
+  },
   "scripts": {
     "web:dev": "npm --workspace apps/web run dev",
     "web:build": "npm --workspace apps/web run build",
@@ -14,4 +22,3 @@
     "typecheck": "npm --workspace apps/web run typecheck"
   }
 }
-

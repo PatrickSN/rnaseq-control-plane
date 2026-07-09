@@ -4,6 +4,10 @@
 
 Build and maintain a product layer for RNA-Seq Nextflow execution, monitoring, provenance, and artifact exploration for `soja-iac` and `RNA-Seq-Arabidopsis`.
 
+## Project memory
+
+Read `PROJECT_MEMORY.md` before proposing commands, environment setup, runner behavior, deployment notes, or troubleshooting steps. Its runtime policy is authoritative for this project.
+
 ## Operating principles
 
 - Do not modify the scientific pipelines in the MVP.
@@ -12,6 +16,10 @@ Build and maintain a product layer for RNA-Seq Nextflow execution, monitoring, p
 - Keep `local` and `slurm` modeled, while only `local` execution is implemented in the MVP.
 - Prefer typed contracts and explicit validation over implicit payload shapes.
 - Keep comments sparse and focused on operational context.
+- Target a Linux server runtime using micromamba environment `rnaseq-control`.
+- Prefer `micromamba activate rnaseq-control` for interactive workflows and `micromamba run -n rnaseq-control <command>` for isolated commands.
+- Do not assume Windows, PowerShell, local workstation execution, local `.venv`, global package installation, or Docker as an initial requirement.
+- Use Linux server paths such as `~/projetos/rnaseq-control-plane`, `~/dados/rnaseq-control`, and `~/pipelines` in examples and documentation.
 
 ## Main agent
 
@@ -41,5 +49,4 @@ Owns pipeline metadata, params/artifact contracts, trace parsing, and species-sp
 
 ## DevOps/QA agent
 
-Owns Docker Compose, reproducible local setup, tests, and smoke validation boundaries. It should clearly separate fake-runner validation from real Nextflow validation.
-
+Owns reproducible Linux server setup, micromamba environment validation, optional Docker Compose assets, tests, and smoke validation boundaries. It should clearly separate fake-runner validation from real Nextflow validation.

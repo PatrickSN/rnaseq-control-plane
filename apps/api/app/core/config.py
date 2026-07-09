@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+from sqlalchemy.engine import make_url
+
 
 def _bool_env(name: str, default: bool) -> bool:
     raw = os.getenv(name)
@@ -61,6 +63,25 @@ def _resolve_path(raw: str | Path, base: Path | None = None) -> Path:
     return path.resolve()
 
 
+def normalize_database_url(database_url: str, base_dir: Path) -> str:
+    url = make_url(database_url)
+    if not url.drivername.startswith("sqlite") or not url.database or url.database == ":memory:":
+        return database_url
+
+    database_path = Path(url.database).expanduser()
+    if not database_path.is_absolute():
+        database_path = base_dir / database_path
+    database_path = database_path.resolve()
+    return str(url.set(database=str(database_path)))
+
+
+def ensure_sqlite_database_parent(database_url: str) -> None:
+    url = make_url(database_url)
+    if not url.drivername.startswith("sqlite") or not url.database or url.database == ":memory:":
+        return
+    Path(url.database).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
+
+
 @lru_cache
 def get_settings() -> Settings:
     detected_root = Path(__file__).resolve().parents[4]
@@ -82,13 +103,18 @@ def get_settings() -> Settings:
         _first_env("RNASEQ_REFERENCES_ROOT", "REFERENCES_ROOT") or data_root / "references"
     )
     cors = os.getenv("RNASEQ_CORS_ORIGINS", "*")
-    return Settings(
-        project_root=project_root,
-        data_root=data_root,
-        database_url=os.getenv(
+    database_url = normalize_database_url(
+        os.getenv(
             "RNASEQ_DATABASE_URL",
             f"sqlite+pysqlite:///{data_root / 'rnaseq-dev.sqlite3'}",
         ),
+        project_root,
+    )
+    ensure_sqlite_database_parent(database_url)
+    return Settings(
+        project_root=project_root,
+        data_root=data_root,
+        database_url=database_url,
         jwt_secret=os.getenv("RNASEQ_JWT_SECRET", "dev-only-change-me"),
         jwt_expire_minutes=int(os.getenv("RNASEQ_JWT_EXPIRE_MINUTES", "1440")),
         admin_email=os.getenv("RNASEQ_ADMIN_EMAIL", "admin@example.com"),

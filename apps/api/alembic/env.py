@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import os
 from logging.config import fileConfig
 
 from alembic import context
-from app.core.config import get_settings
+from app.core.config import ensure_sqlite_database_parent, get_settings
 from app.db.base import Base
 from app.models import entities  # noqa: F401
 from sqlalchemy import engine_from_config, pool
@@ -17,7 +16,9 @@ target_metadata = Base.metadata
 
 
 def database_url() -> str:
-    return os.getenv("RNASEQ_DATABASE_URL") or get_settings().database_url
+    url = get_settings().database_url
+    ensure_sqlite_database_parent(url)
+    return url
 
 
 def run_migrations_offline() -> None:

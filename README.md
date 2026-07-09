@@ -69,6 +69,11 @@ micromamba run -n rnaseq-control node --version
 Create the PostgreSQL database and user on the server, then set
 `RNASEQ_DATABASE_URL` in `.env`.
 
+If `alembic upgrade head` reports a SQLite error, the process did not receive a
+PostgreSQL `RNASEQ_DATABASE_URL` and fell back to
+`$DATA_ROOT/rnaseq-dev.sqlite3`. That fallback is supported for development,
+but the server deployment should point `RNASEQ_DATABASE_URL` at PostgreSQL.
+
 Run migrations from the API directory:
 
 ```bash
