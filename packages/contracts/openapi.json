@@ -1,0 +1,200 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "rnaseq-control-plane",
+    "version": "0.1.0",
+    "description": "Bootstrap OpenAPI contract for the RNA-Seq control plane MVP. Regenerate with apps/api/scripts/export_openapi.py after installing API dependencies."
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "API health"
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "register",
+        "responses": {
+          "201": {
+            "description": "Registered user"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "login",
+        "responses": {
+          "200": {
+            "description": "Bearer token"
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": ["auth"],
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Current user"
+          }
+        }
+      }
+    },
+    "/api/pipelines": {
+      "get": {
+        "tags": ["pipelines"],
+        "operationId": "list_pipelines",
+        "responses": {
+          "200": {
+            "description": "Pipeline list"
+          }
+        }
+      }
+    },
+    "/api/runs": {
+      "post": {
+        "tags": ["runs"],
+        "operationId": "create_run",
+        "responses": {
+          "201": {
+            "description": "Created run"
+          }
+        }
+      },
+      "get": {
+        "tags": ["runs"],
+        "operationId": "list_runs",
+        "responses": {
+          "200": {
+            "description": "Run list"
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}": {
+      "get": {
+        "tags": ["runs"],
+        "operationId": "get_run",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run detail"
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/resume": {
+      "post": {
+        "tags": ["runs"],
+        "operationId": "resume_run",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Resumed run"
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/tasks": {
+      "get": {
+        "tags": ["runs"],
+        "operationId": "list_tasks",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run task list"
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/artifacts": {
+      "get": {
+        "tags": ["runs"],
+        "operationId": "list_artifacts",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run artifact list"
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/logs/{log_type}": {
+      "get": {
+        "tags": ["runs"],
+        "operationId": "get_log",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "log_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["stdout", "stderr", "nextflow"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run log"
+          }
+        }
+      }
+    }
+  }
+}
+

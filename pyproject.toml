@@ -1,0 +1,24 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["apps/web", "node_modules", "storage"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["apps/api/app/tests"]
+pythonpath = ["apps/api", "packages/contracts"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = ["apps/api", "packages/contracts", "apps/cli"]
+exclude = ["apps/web", "storage"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["sqlalchemy.*", "alembic.*", "yaml.*"]
+ignore_missing_imports = true
+

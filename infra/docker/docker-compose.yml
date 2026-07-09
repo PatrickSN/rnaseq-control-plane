@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: rnaseq
+      POSTGRES_USER: rnaseq
+      POSTGRES_PASSWORD: rnaseq
+    ports:
+      - "5432:5432"
+    volumes:
+      - rnaseq-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rnaseq -d rnaseq"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    environment:
+      RNASEQ_DATABASE_URL: postgresql+psycopg://rnaseq:rnaseq@postgres:5432/rnaseq
+      RNASEQ_JWT_SECRET: dev-compose-secret
+      RNASEQ_ADMIN_EMAIL: admin@example.com
+      RNASEQ_ADMIN_PASSWORD: admin123
+      RNASEQ_PIPELINES_BASE_DIR: /pipelines
+      RNASEQ_STORAGE_DIR: /app/storage
+      RNASEQ_RUNNER_MODE: ${RNASEQ_RUNNER_MODE:-fake}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../../storage:/app/storage
+      - ../../../soja-iac:/pipelines/soja-iac:ro
+      - ../../../RNA-Seq-Arabidopsis:/pipelines/RNA-Seq-Arabidopsis:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  rnaseq-postgres:
+

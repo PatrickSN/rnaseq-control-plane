@@ -1,0 +1,17 @@
+{
+  "name": "rnaseq-control-plane",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/web",
+    "packages/contracts"
+  ],
+  "scripts": {
+    "web:dev": "npm --workspace apps/web run dev",
+    "web:build": "npm --workspace apps/web run build",
+    "web:lint": "npm --workspace apps/web run lint",
+    "contracts:build": "npm --workspace packages/contracts run build",
+    "typecheck": "npm --workspace apps/web run typecheck"
+  }
+}
+
