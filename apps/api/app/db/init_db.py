@@ -10,7 +10,6 @@ from app.core.security import hash_password
 from app.models.entities import Pipeline, PipelineVersion, User
 from app.services.pipeline_registry import compute_pipeline_fingerprint
 
-
 PIPELINE_SEEDS = [
     {
         "slug": "soja-iac",
@@ -88,8 +87,13 @@ def seed_pipelines(db: Session, settings: Settings) -> None:
 
 
 def ensure_storage(settings: Settings) -> None:
-    Path(settings.storage_dir).mkdir(parents=True, exist_ok=True)
-    (settings.storage_dir / "runs").mkdir(parents=True, exist_ok=True)
+    for path in [
+        settings.data_root,
+        settings.runs_dir,
+        settings.artifacts_dir,
+        settings.references_dir,
+    ]:
+        Path(path).mkdir(parents=True, exist_ok=True)
 
 
 def init_db(db: Session, settings: Settings) -> None:
@@ -97,4 +101,3 @@ def init_db(db: Session, settings: Settings) -> None:
     seed_admin_user(db, settings)
     seed_pipelines(db, settings)
     db.commit()
-

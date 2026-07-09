@@ -11,7 +11,10 @@ CONFIG_PATH = Path.home() / ".rnaseq-control-plane" / "config.json"
 
 
 def api_url() -> str:
-    return os.getenv("RNASEQ_API_URL", "http://localhost:8000").rstrip("/")
+    configured = os.getenv("RNASEQ_API_URL")
+    if not configured:
+        raise RuntimeError("Set RNASEQ_API_URL, for example http://<server-host>:8000")
+    return configured.rstrip("/")
 
 
 def load_config() -> dict[str, Any]:
@@ -48,4 +51,3 @@ def request(method: str, path: str, **kwargs: Any) -> Any:
     if not response.content:
         return None
     return response.json()
-

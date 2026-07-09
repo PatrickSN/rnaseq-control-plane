@@ -1,11 +1,12 @@
 # rnaseq-control-plane
 
-Web + CLI control plane for running, monitoring, and exploring RNA-Seq Nextflow pipelines without modifying the scientific pipeline repositories.
+Web + CLI control plane for running, monitoring, and exploring RNA-Seq Nextflow
+pipelines without modifying the scientific pipeline repositories.
 
 Supported pipeline targets in this MVP:
 
-- `../soja-iac`
-- `../RNA-Seq-Arabidopsis`
+- `~/pipelines/soja-iac`
+- `~/pipelines/RNA-Seq-Arabidopsis`
 
 ## Monorepo layout
 
@@ -14,92 +15,146 @@ apps/api              FastAPI API, SQLAlchemy models, runner, parser
 apps/web              Next.js + TypeScript UI
 apps/cli              Typer CLI
 packages/contracts    Shared Pydantic schemas and TypeScript interfaces
-infra/docker          Development Docker Compose
-storage               Local run state and captured logs
+infra/docker          Optional Docker Compose stack for future/dev use
+storage               Repository placeholder only; server data belongs in DATA_ROOT
 docs                  Architecture and roadmap
 ```
 
-## Development prerequisites
+## Target environment
 
-- Python 3.11+
-- Node.js 20+
-- PostgreSQL 16 for normal development
-- Docker Compose for the provided dev stack
-- Nextflow, Java, and Conda/Mamba only when executing real pipelines with `RNASEQ_RUNNER_MODE=local`
+The project is developed and executed on a Linux server with micromamba. The
+Python backend, CLI, runner, tests, and Node.js build tools should run inside
+the `rnaseq-control` environment. Do not create a local `.venv` as the default
+workflow and do not install project dependencies globally.
 
-The Docker Compose stack defaults to `RNASEQ_RUNNER_MODE=fake` so the API, web, auth, database, parser, and UI can be exercised without installing Nextflow inside the API container.
+Expected server directories:
+
+```bash
+PROJECT_ROOT=~/projetos/rnaseq-control-plane
+DATA_ROOT=~/dados/rnaseq-control
+PIPELINES_ROOT=~/pipelines
+RUNS_ROOT=~/dados/rnaseq-control/runs
+ARTIFACTS_ROOT=~/dados/rnaseq-control/artifacts
+REFERENCES_ROOT=~/dados/rnaseq-control/references
+```
+
+Keep the control-plane dependencies separate from heavy scientific pipeline
+environments such as `envs/rnaseq-tools.yml` and `envs/r-analysis.yml`.
+
+## Environment setup
+
+```bash
+cd ~/projetos/rnaseq-control-plane
+micromamba create -f environment.yml
+micromamba activate rnaseq-control
+pip install -e ./packages/contracts -e './apps/api[dev]' -e ./apps/cli
+npm install
+cp .env.example .env
+```
+
+Edit `.env` for the real server hostname, PostgreSQL credentials, secrets, and
+pipeline/data directories before starting services. The API and Alembic load the
+project-root `.env` without overriding variables already exported by the shell.
+
+Check the runtime tools:
+
+```bash
+micromamba run -n rnaseq-control python --version
+micromamba run -n rnaseq-control nextflow -version
+micromamba run -n rnaseq-control node --version
+```
+
+## Database
+
+Create the PostgreSQL database and user on the server, then set
+`RNASEQ_DATABASE_URL` in `.env`.
+
+Run migrations from the API directory:
+
+```bash
+cd ~/projetos/rnaseq-control-plane/apps/api
+micromamba run -n rnaseq-control alembic upgrade head
+```
+
+Default development login after startup seed:
+
+- email: `admin@example.com`
+- password: value from `RNASEQ_ADMIN_PASSWORD`
 
 ## API
 
-```powershell
-cd rnaseq-control-plane
-py -3 -m venv .venv
-.\.venv\Scripts\pip install -e .\packages\contracts -e .\apps\api[dev]
-$env:RNASEQ_RUNNER_MODE="fake"
-.\.venv\Scripts\uvicorn app.main:app --app-dir apps/api --reload
+Start the API on all server interfaces so it can be reached remotely:
+
+```bash
+micromamba activate rnaseq-control
+cd ~/projetos/rnaseq-control-plane/apps/api
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Default development login:
+FastAPI serves OpenAPI at `http://<server-host>:8000/openapi.json`. To export a
+copy into contracts:
 
-- email: `admin@example.com`
-- password: `admin123`
-
-FastAPI serves OpenAPI at `http://localhost:8000/openapi.json`. To export a copy into contracts:
-
-```powershell
-$env:PYTHONPATH="apps/api;packages/contracts"
-.\.venv\Scripts\python apps/api/scripts/export_openapi.py
+```bash
+cd ~/projetos/rnaseq-control-plane
+micromamba run -n rnaseq-control python apps/api/scripts/export_openapi.py
 ```
 
 ## Web
 
-```powershell
-cd rnaseq-control-plane
-npm install
-npm run web:dev
+If the API and Web UI use the same hostname, the browser client infers
+`http://<current-host>:8000`. Export `NEXT_PUBLIC_API_URL` before starting the
+Web UI only when the API is served from a different hostname or port.
+
+```bash
+cd ~/projetos/rnaseq-control-plane
+micromamba run -n rnaseq-control npm run web:dev
 ```
 
-Open `http://localhost:3000/login`.
+Open `http://<server-host>:3000/login`.
 
 ## CLI
 
-```powershell
-cd rnaseq-control-plane
-.\.venv\Scripts\pip install -e .\packages\contracts -e .\apps\cli
-$env:RNASEQ_API_URL="http://localhost:8000"
-rnaseq auth login --email admin@example.com --password admin123
-rnaseq pipelines list
-rnaseq runs create --pipeline soja-iac --params-file ..\soja-iac\params.yaml
-rnaseq runs list
+```bash
+cd ~/projetos/rnaseq-control-plane
+export RNASEQ_API_URL=http://<server-host>:8000
+micromamba run -n rnaseq-control rnaseq auth login --email admin@example.com --password '<password>'
+micromamba run -n rnaseq-control rnaseq pipelines list
+micromamba run -n rnaseq-control rnaseq runs create --pipeline soja-iac --params-file ~/pipelines/soja-iac/params.yaml
+micromamba run -n rnaseq-control rnaseq runs list --json
 ```
+
+CLI commands are human-readable by default and support `--json` where automation
+needs scriptable output.
+
+## Runner
+
+The real runner executes Nextflow with an argument list, not an interpolated
+shell string. A run records the pipeline path and fingerprint, generated
+parameters, profile, executor, command, work directory, output directory, logs,
+Nextflow session ID, trace, reports, and indexed artifacts.
+
+Real local Nextflow execution requires `RNASEQ_RUNNER_MODE=local`, Java,
+Nextflow, and pipeline-specific environments available on the Linux server.
+Use `RNASEQ_RUNNER_MODE=fake` for deterministic API/web/CLI validation without
+running scientific tools.
 
 ## Docker Compose
 
-```powershell
-cd rnaseq-control-plane\infra\docker
-docker compose up --build
-```
-
-Services:
-
-- API: `http://localhost:8000`
-- Web: `http://localhost:3000`
-- PostgreSQL: `localhost:5432`
-
-To attempt real local Nextflow execution instead of fake runs, set `RNASEQ_RUNNER_MODE=local` and ensure the API runtime can see `nextflow`, Java, Conda/Mamba environments, and the pipeline paths. The scientific pipelines are mounted read-only by Compose and are not modified by this product.
+Docker Compose files remain under `infra/docker` for optional development or
+future packaging, but Docker is not required for the MVP server workflow.
 
 ## Quality checks
 
-```powershell
-cd rnaseq-control-plane
-$env:PYTHONPATH="apps/api;packages/contracts"
-pytest
-ruff check apps/api packages/contracts apps/cli
-mypy apps/api packages/contracts apps/cli
-npm run contracts:build
-npm run typecheck
-npm run web:build
+```bash
+cd ~/projetos/rnaseq-control-plane
+micromamba run -n rnaseq-control pytest
+micromamba run -n rnaseq-control ruff check apps/api packages/contracts apps/cli
+micromamba run -n rnaseq-control mypy apps/api packages/contracts apps/cli
+micromamba run -n rnaseq-control npm run contracts:build
+micromamba run -n rnaseq-control npm run typecheck
+micromamba run -n rnaseq-control npm run web:build
 ```
 
-This environment may not have Docker or Nextflow installed. In that case, use `RNASEQ_RUNNER_MODE=fake` for API integration tests and run real pipeline smoke checks on a host configured for Nextflow.
-
+Use fake-runner tests for product validation and run real Nextflow smoke checks
+only on a server configured with the target pipelines and their scientific
+environments.

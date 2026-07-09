@@ -1,0 +1,25 @@
+name: rnaseq-control
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - nodejs=20
+  - openjdk=17
+  - nextflow
+  - pip
+  - alembic
+  - fastapi
+  - httpx
+  - mypy
+  - pandas
+  - psycopg
+  - pydantic
+  - python-multipart
+  - pyyaml
+  - pytest
+  - rich
+  - ruff
+  - sqlalchemy
+  - typer
+  - uvicorn

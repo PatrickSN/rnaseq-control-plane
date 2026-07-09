@@ -4,6 +4,14 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from rnaseq_contracts import (
+    ArtifactRead,
+    LogRead,
+    RunCreate,
+    RunRead,
+    RunResumeRequest,
+    RunTaskRead,
+)
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,14 +28,6 @@ from app.models.entities import (
     User,
 )
 from app.services.runner import FakeRunner, LocalNextflowRunner, build_nextflow_command
-from rnaseq_contracts import (
-    ArtifactRead,
-    LogRead,
-    RunCreate,
-    RunRead,
-    RunResumeRequest,
-    RunTaskRead,
-)
 
 router = APIRouter(prefix="/api/runs", tags=["runs"])
 
@@ -88,7 +88,7 @@ def create_run_model(
     db.add(run)
     db.flush()
 
-    run_root = settings.storage_dir / "runs" / run.id
+    run_root = settings.runs_dir / run.id
     run.output_dir = str(run_root / "results")
     run.work_dir = str(run_root / "work")
     run.params_path = str(run_root / "params.generated.yaml")
@@ -215,4 +215,3 @@ def get_log(
     path = base / filenames[log_type]
     content = path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
     return LogRead(run_id=run.id, log_type=log_type, content=content)
-

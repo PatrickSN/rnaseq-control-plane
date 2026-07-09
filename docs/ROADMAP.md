@@ -2,7 +2,7 @@
 
 ## MVP
 
-- Monorepo scaffold with API, web, CLI, contracts, Docker Compose, tests, and docs.
+- Monorepo scaffold with API, web, CLI, contracts, optional Docker Compose, tests, and docs.
 - PostgreSQL-backed model for users, pipelines, versions, runs, parameters, tasks, artifacts, and audit events.
 - Login/register/JWT auth with development admin seed.
 - Local background runner that executes `nextflow run` and captures logs/provenance.
@@ -19,7 +19,7 @@
 - Result readers for DESeq2, enrichment, splicing, WGCNA, and integration tables.
 - Role-based authorization on runs and pipeline management.
 - More complete OpenAPI-generated TypeScript client.
-- Real local-run smoke fixture on a machine with Nextflow and Conda/Mamba.
+- Real local-run smoke fixture on a Linux server with Nextflow and micromamba.
 
 ## v2
 
@@ -29,4 +29,3 @@
 - Run-to-run parameter and result comparison.
 - Storage backends beyond local filesystem.
 - Optional Apptainer/Singularity support for HPC environments.
-

@@ -1,6 +1,16 @@
 import type { ArtifactRead, PipelineRead, RunRead, RunTaskRead, TokenRead } from "@rnaseq/contracts";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const CONFIGURED_API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+
+function apiUrl(): string {
+  if (CONFIGURED_API_URL) {
+    return CONFIGURED_API_URL;
+  }
+  if (typeof window !== "undefined") {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return "http://0.0.0.0:8000";
+}
 
 export function getToken(): string | null {
   if (typeof window === "undefined") {
@@ -20,7 +30,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
-  const response = await fetch(`${API_URL}${path}`, { ...init, headers, cache: "no-store" });
+  const response = await fetch(`${apiUrl()}${path}`, { ...init, headers, cache: "no-store" });
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || response.statusText);
@@ -59,4 +69,3 @@ export async function runLog(id: string, type: "stdout" | "stderr" | "nextflow")
   const response = await apiFetch<{ content: string }>(`/api/runs/${id}/logs/${type}`);
   return response.content;
 }
-
