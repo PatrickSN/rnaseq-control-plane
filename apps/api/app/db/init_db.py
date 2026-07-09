@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TypedDict
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -10,7 +11,18 @@ from app.core.security import hash_password
 from app.models.entities import Pipeline, PipelineVersion, User
 from app.services.pipeline_registry import compute_pipeline_fingerprint
 
-PIPELINE_SEEDS = [
+
+class PipelineSeed(TypedDict):
+    slug: str
+    display_name: str
+    organism: str
+    description: str
+    relative_path: str
+    version: str
+    supported_profiles: list[str]
+
+
+PIPELINE_SEEDS: list[PipelineSeed] = [
     {
         "slug": "soja-iac",
         "display_name": "Soja IAC RNA-Seq",

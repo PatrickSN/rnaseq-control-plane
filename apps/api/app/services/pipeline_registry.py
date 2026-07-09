@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-
 FINGERPRINT_FILES = ("main.nf", "nextflow.config", "params.yaml")
 
 

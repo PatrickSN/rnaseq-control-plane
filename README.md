@@ -30,7 +30,7 @@ workflow and do not install project dependencies globally.
 Expected server directories:
 
 ```bash
-PROJECT_ROOT=~/projetos/rnaseq-control-plane
+PROJECT_ROOT=~/projetos/Eulalio/rnaseq-control-plane
 DATA_ROOT=~/dados/rnaseq-control
 PIPELINES_ROOT=~/pipelines
 RUNS_ROOT=~/dados/rnaseq-control/runs
@@ -44,7 +44,7 @@ environments such as `envs/rnaseq-tools.yml` and `envs/r-analysis.yml`.
 ## Environment setup
 
 ```bash
-cd ~/projetos/rnaseq-control-plane
+cd ~/projetos/Eulalio/rnaseq-control-plane
 micromamba create -f environment.yml
 micromamba activate rnaseq-control
 pip install -e ./packages/contracts -e './apps/api[dev]' -e ./apps/cli
@@ -77,7 +77,7 @@ but the server deployment should point `RNASEQ_DATABASE_URL` at PostgreSQL.
 Run migrations from the API directory:
 
 ```bash
-cd ~/projetos/rnaseq-control-plane/apps/api
+cd ~/projetos/Eulalio/rnaseq-control-plane/apps/api
 micromamba run -n rnaseq-control alembic upgrade head
 ```
 
@@ -92,7 +92,7 @@ Start the API on all server interfaces so it can be reached remotely:
 
 ```bash
 micromamba activate rnaseq-control
-cd ~/projetos/rnaseq-control-plane/apps/api
+cd ~/projetos/Eulalio/rnaseq-control-plane/apps/api
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -100,7 +100,7 @@ FastAPI serves OpenAPI at `http://<server-host>:8000/openapi.json`. To export a
 copy into contracts:
 
 ```bash
-cd ~/projetos/rnaseq-control-plane
+cd ~/projetos/Eulalio/rnaseq-control-plane
 micromamba run -n rnaseq-control python apps/api/scripts/export_openapi.py
 ```
 
@@ -111,7 +111,7 @@ If the API and Web UI use the same hostname, the browser client infers
 Web UI only when the API is served from a different hostname or port.
 
 ```bash
-cd ~/projetos/rnaseq-control-plane
+cd ~/projetos/Eulalio/rnaseq-control-plane
 micromamba run -n rnaseq-control npm run web:dev
 ```
 
@@ -120,7 +120,7 @@ Open `http://<server-host>:3000/login`.
 ## CLI
 
 ```bash
-cd ~/projetos/rnaseq-control-plane
+cd ~/projetos/Eulalio/rnaseq-control-plane
 export RNASEQ_API_URL=http://<server-host>:8000
 micromamba run -n rnaseq-control rnaseq auth login --email admin@example.com --password '<password>'
 micromamba run -n rnaseq-control rnaseq pipelines list
@@ -151,7 +151,7 @@ future packaging, but Docker is not required for the MVP server workflow.
 ## Quality checks
 
 ```bash
-cd ~/projetos/rnaseq-control-plane
+cd ~/projetos/Eulalio/rnaseq-control-plane
 micromamba run -n rnaseq-control pytest
 micromamba run -n rnaseq-control ruff check apps/api packages/contracts apps/cli
 micromamba run -n rnaseq-control mypy apps/api packages/contracts apps/cli

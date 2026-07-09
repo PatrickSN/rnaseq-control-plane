@@ -6,7 +6,7 @@ Build and maintain a product layer for RNA-Seq Nextflow execution, monitoring, p
 
 ## Project memory
 
-Read `PROJECT_MEMORY.md` before proposing commands, environment setup, runner behavior, deployment notes, or troubleshooting steps. Its runtime policy is authoritative for this project.
+Read `docs/PROJECT_MEMORY.md` before proposing commands, environment setup, runner behavior, deployment notes, or troubleshooting steps. Its runtime policy is authoritative for this project.
 
 ## Operating principles
 
@@ -19,7 +19,7 @@ Read `PROJECT_MEMORY.md` before proposing commands, environment setup, runner be
 - Target a Linux server runtime using micromamba environment `rnaseq-control`.
 - Prefer `micromamba activate rnaseq-control` for interactive workflows and `micromamba run -n rnaseq-control <command>` for isolated commands.
 - Do not assume Windows, PowerShell, local workstation execution, local `.venv`, global package installation, or Docker as an initial requirement.
-- Use Linux server paths such as `~/projetos/rnaseq-control-plane`, `~/dados/rnaseq-control`, and `~/pipelines` in examples and documentation.
+- Use Linux server paths such as `~/projetos/Eulalio/rnaseq-control-plane`, `~/dados/rnaseq-control`, and `~/pipelines` in examples and documentation.
 
 ## Main agent
 

@@ -48,10 +48,13 @@ def file_sha256(path: Path) -> str:
 
 
 def parse_int(raw: str | None) -> int | None:
-    if raw in (None, "", "-"):
+    if raw is None:
+        return None
+    normalized = raw.strip()
+    if normalized in {"", "-"}:
         return None
     try:
-        return int(raw)
+        return int(normalized)
     except ValueError:
         return None
 

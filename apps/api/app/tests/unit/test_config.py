@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
+
 from app.core.config import ensure_sqlite_database_parent, get_settings, normalize_database_url
 
 
-def test_settings_resolve_server_data_directories(monkeypatch, tmp_path) -> None:
+def test_settings_resolve_server_data_directories(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
     for name in [
         "RNASEQ_DATABASE_URL",
         "RNASEQ_DATA_ROOT",
@@ -33,7 +40,7 @@ def test_settings_resolve_server_data_directories(monkeypatch, tmp_path) -> None
     get_settings.cache_clear()
 
 
-def test_ensure_sqlite_database_parent_creates_parent(tmp_path) -> None:
+def test_ensure_sqlite_database_parent_creates_parent(tmp_path: Path) -> None:
     database_path = tmp_path / "missing" / "rnaseq.sqlite3"
 
     ensure_sqlite_database_parent(f"sqlite+pysqlite:///{database_path}")
@@ -41,7 +48,7 @@ def test_ensure_sqlite_database_parent_creates_parent(tmp_path) -> None:
     assert database_path.parent.is_dir()
 
 
-def test_relative_sqlite_database_url_is_resolved_from_project_root(tmp_path) -> None:
+def test_relative_sqlite_database_url_is_resolved_from_project_root(tmp_path: Path) -> None:
     normalized = normalize_database_url(
         "sqlite+pysqlite:///../../storage/rnaseq-dev.sqlite3",
         tmp_path / "project" / "apps" / "api",
@@ -49,10 +56,10 @@ def test_relative_sqlite_database_url_is_resolved_from_project_root(tmp_path) ->
 
     assert normalized.startswith("sqlite+pysqlite:///")
     assert ".." not in normalized
-    assert normalized.endswith("/storage/rnaseq-dev.sqlite3")
+    assert normalized.replace("\\", "/").endswith("/storage/rnaseq-dev.sqlite3")
 
 
-def test_ensure_sqlite_database_parent_ignores_non_sqlite(tmp_path) -> None:
+def test_ensure_sqlite_database_parent_ignores_non_sqlite(tmp_path: Path) -> None:
     marker = tmp_path / "db-host.example:5432"
 
     ensure_sqlite_database_parent("postgresql+psycopg://rnaseq:secret@db-host.example:5432/rnaseq")

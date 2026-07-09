@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import importlib
+from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 
-def test_create_run_with_fake_runner(tmp_path, monkeypatch) -> None:
+def test_create_run_with_fake_runner(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("RNASEQ_DATABASE_URL", f"sqlite+pysqlite:///{tmp_path / 'test.sqlite3'}")
     monkeypatch.setenv("RNASEQ_STORAGE_DIR", str(tmp_path / "storage"))
     monkeypatch.setenv("RNASEQ_PIPELINES_BASE_DIR", str(tmp_path / "pipelines"))
@@ -59,4 +64,3 @@ def test_create_run_with_fake_runner(tmp_path, monkeypatch) -> None:
         assert db.scalar(select(RunTask).where(RunTask.run_id == run_id)) is not None
         assert db.scalar(select(RunArtifact).where(RunArtifact.run_id == run_id)) is not None
         assert db.scalar(select(AuditEvent).where(AuditEvent.run_id == run_id)) is not None
-

@@ -63,6 +63,15 @@ def _resolve_path(raw: str | Path, base: Path | None = None) -> Path:
     return path.resolve()
 
 
+def _env_file_path(project_root: Path) -> Path | None:
+    raw = os.getenv("RNASEQ_ENV_FILE")
+    if raw is None:
+        return project_root / ".env"
+    if not raw.strip():
+        return None
+    return _resolve_path(raw, project_root)
+
+
 def normalize_database_url(database_url: str, base_dir: Path) -> str:
     url = make_url(database_url)
     if not url.drivername.startswith("sqlite") or not url.database or url.database == ":memory:":
@@ -85,7 +94,9 @@ def ensure_sqlite_database_parent(database_url: str) -> None:
 @lru_cache
 def get_settings() -> Settings:
     detected_root = Path(__file__).resolve().parents[4]
-    _load_env_file(detected_root / ".env")
+    env_file = _env_file_path(detected_root)
+    if env_file is not None:
+        _load_env_file(env_file)
     project_root = _resolve_path(_first_env("RNASEQ_PROJECT_ROOT", "PROJECT_ROOT") or detected_root)
     data_root = _resolve_path(
         _first_env("RNASEQ_DATA_ROOT", "DATA_ROOT", "RNASEQ_STORAGE_DIR")

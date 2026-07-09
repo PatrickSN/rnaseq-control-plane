@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from typing import Annotated, TypeAlias
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from rnaseq_contracts import AuthLogin, TokenRead, UserCreate, UserRead
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -8,13 +11,14 @@ from app.api.deps import get_current_user
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.session import get_db
 from app.models.entities import AuditEvent, User
-from rnaseq_contracts import AuthLogin, TokenRead, UserCreate, UserRead
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+DbSession: TypeAlias = Annotated[Session, Depends(get_db)]
+CurrentUser: TypeAlias = Annotated[User, Depends(get_current_user)]
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def register(payload: UserCreate, db: Session = Depends(get_db)) -> User:
+def register(payload: UserCreate, db: DbSession) -> User:
     existing = db.scalar(select(User).where(User.email == payload.email))
     if existing is not None:
         raise HTTPException(status_code=409, detail="Email already registered")
@@ -41,7 +45,7 @@ def register(payload: UserCreate, db: Session = Depends(get_db)) -> User:
 
 
 @router.post("/login", response_model=TokenRead)
-def login(payload: AuthLogin, db: Session = Depends(get_db)) -> TokenRead:
+def login(payload: AuthLogin, db: DbSession) -> TokenRead:
     user = db.scalar(select(User).where(User.email == payload.email))
     if user is None or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
@@ -61,6 +65,5 @@ def login(payload: AuthLogin, db: Session = Depends(get_db)) -> TokenRead:
 
 
 @router.get("/me", response_model=UserRead)
-def me(current_user: User = Depends(get_current_user)) -> User:
+def me(current_user: CurrentUser) -> User:
     return current_user
-

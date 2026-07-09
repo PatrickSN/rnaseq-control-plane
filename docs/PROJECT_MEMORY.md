@@ -10,7 +10,7 @@ Primary environment:
 - Target operating system: Linux server.
 - Environment manager: micromamba.
 - Environment name: `rnaseq-control`.
-- Suggested project directory: `~/projetos/rnaseq-control-plane`.
+- Suggested project directory: `~/projetos/Eulalio/rnaseq-control-plane`.
 - Backend, CLI, runner, and Python services must run inside the micromamba environment `rnaseq-control`.
 
 ## Command policy
@@ -53,7 +53,7 @@ not the baseline requirement for the MVP server workflow.
 
 Use Linux server paths in docs, commands, and examples:
 
-- Project: `~/projetos/rnaseq-control-plane`
+- Project: `~/projetos/Eulalio/rnaseq-control-plane`
 - Data: `~/dados/rnaseq-control`
 - Pipelines: `~/pipelines`
 - Runs: `~/dados/rnaseq-control/runs`

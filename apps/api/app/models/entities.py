@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
@@ -16,7 +16,7 @@ def new_uuid() -> str:
 
 
 def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class User(Base):
@@ -75,7 +75,10 @@ class Run(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_uuid)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
     pipeline_id: Mapped[str] = mapped_column(ForeignKey("pipelines.id"), nullable=False)
-    pipeline_version_id: Mapped[str] = mapped_column(ForeignKey("pipeline_versions.id"), nullable=False)
+    pipeline_version_id: Mapped[str] = mapped_column(
+        ForeignKey("pipeline_versions.id"),
+        nullable=False,
+    )
     resumed_from_run_id: Mapped[str | None] = mapped_column(ForeignKey("runs.id"))
     name: Mapped[str | None] = mapped_column(String(160))
     status: Mapped[str] = mapped_column(String(32), default="queued", index=True, nullable=False)

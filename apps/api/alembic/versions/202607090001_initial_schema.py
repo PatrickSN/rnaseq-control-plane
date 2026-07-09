@@ -39,7 +39,12 @@ def upgrade() -> None:
     op.create_table(
         "pipeline_versions",
         sa.Column("id", sa.String(length=36), primary_key=True),
-        sa.Column("pipeline_id", sa.String(length=36), sa.ForeignKey("pipelines.id"), nullable=False),
+        sa.Column(
+            "pipeline_id",
+            sa.String(length=36),
+            sa.ForeignKey("pipelines.id"),
+            nullable=False,
+        ),
         sa.Column("version", sa.String(length=80), nullable=False),
         sa.Column("pipeline_path", sa.Text(), nullable=False),
         sa.Column("main_script", sa.String(length=120), nullable=False),
@@ -56,14 +61,24 @@ def upgrade() -> None:
         "runs",
         sa.Column("id", sa.String(length=36), primary_key=True),
         sa.Column("user_id", sa.String(length=36), sa.ForeignKey("users.id"), nullable=False),
-        sa.Column("pipeline_id", sa.String(length=36), sa.ForeignKey("pipelines.id"), nullable=False),
+        sa.Column(
+            "pipeline_id",
+            sa.String(length=36),
+            sa.ForeignKey("pipelines.id"),
+            nullable=False,
+        ),
         sa.Column(
             "pipeline_version_id",
             sa.String(length=36),
             sa.ForeignKey("pipeline_versions.id"),
             nullable=False,
         ),
-        sa.Column("resumed_from_run_id", sa.String(length=36), sa.ForeignKey("runs.id"), nullable=True),
+        sa.Column(
+            "resumed_from_run_id",
+            sa.String(length=36),
+            sa.ForeignKey("runs.id"),
+            nullable=True,
+        ),
         sa.Column("name", sa.String(length=160), nullable=True),
         sa.Column("status", sa.String(length=32), nullable=False),
         sa.Column("profile", sa.String(length=32), nullable=False),
@@ -160,4 +175,3 @@ def downgrade() -> None:
     op.drop_table("pipelines")
     op.drop_index("ix_users_email", table_name="users")
     op.drop_table("users")
-

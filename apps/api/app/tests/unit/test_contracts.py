@@ -4,7 +4,6 @@ from uuid import uuid4
 
 import pytest
 from pydantic import ValidationError
-
 from rnaseq_contracts import ExecutorKind, ProfileName, RunCreate, RunStatus, UserCreate
 
 

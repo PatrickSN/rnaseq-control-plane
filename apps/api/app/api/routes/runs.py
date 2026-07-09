@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal, TypeAlias
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from rnaseq_contracts import (
@@ -30,6 +30,8 @@ from app.models.entities import (
 from app.services.runner import FakeRunner, LocalNextflowRunner, build_nextflow_command
 
 router = APIRouter(prefix="/api/runs", tags=["runs"])
+DbSession: TypeAlias = Annotated[Session, Depends(get_db)]
+CurrentUser: TypeAlias = Annotated[User, Depends(get_current_user)]
 
 
 def runner() -> LocalNextflowRunner:
@@ -116,8 +118,8 @@ def create_run_model(
 def create_run(
     payload: RunCreate,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: DbSession,
+    current_user: CurrentUser,
 ) -> Run:
     run = create_run_model(db, payload, current_user)
     background_tasks.add_task(runner().start, run.id, False)
@@ -126,8 +128,8 @@ def create_run(
 
 @router.get("", response_model=list[RunRead])
 def list_runs(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: DbSession,
+    current_user: CurrentUser,
 ) -> list[Run]:
     query = select(Run).order_by(Run.created_at.desc())
     if current_user.role != "admin":
@@ -138,8 +140,8 @@ def list_runs(
 @router.get("/{run_id}", response_model=RunRead)
 def get_run(
     run_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: DbSession,
+    current_user: CurrentUser,
 ) -> Run:
     run = db.get(Run, run_id)
     if run is None:
@@ -154,8 +156,8 @@ def resume_run(
     run_id: str,
     payload: RunResumeRequest,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: DbSession,
+    current_user: CurrentUser,
 ) -> Run:
     original = get_run(run_id, db, current_user)
     params = dict(original.inputs.get("params", {}))
@@ -177,8 +179,8 @@ def resume_run(
 @router.get("/{run_id}/tasks", response_model=list[RunTaskRead])
 def list_tasks(
     run_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: DbSession,
+    current_user: CurrentUser,
 ) -> list[RunTask]:
     get_run(run_id, db, current_user)
     return list(db.scalars(select(RunTask).where(RunTask.run_id == run_id).order_by(RunTask.name)))
@@ -187,8 +189,8 @@ def list_tasks(
 @router.get("/{run_id}/artifacts", response_model=list[ArtifactRead])
 def list_artifacts(
     run_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: DbSession,
+    current_user: CurrentUser,
 ) -> list[RunArtifact]:
     get_run(run_id, db, current_user)
     return list(
@@ -202,8 +204,8 @@ def list_artifacts(
 def get_log(
     run_id: str,
     log_type: Literal["stdout", "stderr", "nextflow"],
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: DbSession,
+    current_user: CurrentUser,
 ) -> LogRead:
     run = get_run(run_id, db, current_user)
     base = Path(run.output_dir).parent

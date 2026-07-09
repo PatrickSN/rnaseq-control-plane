@@ -6,7 +6,7 @@ import hmac
 import json
 import os
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from app.core.config import get_settings
@@ -15,10 +15,9 @@ from app.core.config import get_settings
 def hash_password(password: str) -> str:
     salt = os.urandom(16)
     digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 260_000)
-    return "pbkdf2_sha256$260000$%s$%s" % (
-        base64.urlsafe_b64encode(salt).decode("ascii"),
-        base64.urlsafe_b64encode(digest).decode("ascii"),
-    )
+    salt_encoded = base64.urlsafe_b64encode(salt).decode("ascii")
+    digest_encoded = base64.urlsafe_b64encode(digest).decode("ascii")
+    return f"pbkdf2_sha256$260000${salt_encoded}${digest_encoded}"
 
 
 def verify_password(password: str, password_hash: str) -> bool:
@@ -47,7 +46,7 @@ def _decode_b64url(data: str) -> bytes:
 
 def create_access_token(subject: str) -> str:
     settings = get_settings()
-    expires = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_expire_minutes)
+    expires = datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes)
     header = {"alg": "HS256", "typ": "JWT"}
     payload: dict[str, Any] = {"sub": subject, "exp": int(expires.timestamp())}
     signing_input = ".".join(
@@ -79,4 +78,3 @@ def decode_access_token(token: str) -> str | None:
         return str(payload["sub"])
     except (ValueError, KeyError, json.JSONDecodeError, TypeError):
         return None
-

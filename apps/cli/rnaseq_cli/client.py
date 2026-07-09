@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -20,7 +20,7 @@ def api_url() -> str:
 def load_config() -> dict[str, Any]:
     if not CONFIG_PATH.is_file():
         return {}
-    return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    return cast(dict[str, Any], json.loads(CONFIG_PATH.read_text(encoding="utf-8")))
 
 
 def save_config(config: dict[str, Any]) -> None:
@@ -29,7 +29,11 @@ def save_config(config: dict[str, Any]) -> None:
 
 
 def token() -> str | None:
-    return os.getenv("RNASEQ_TOKEN") or load_config().get("token")
+    configured = os.getenv("RNASEQ_TOKEN")
+    if configured:
+        return configured
+    saved = load_config().get("token")
+    return saved if isinstance(saved, str) else None
 
 
 def headers() -> dict[str, str]:
