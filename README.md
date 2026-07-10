@@ -81,6 +81,13 @@ cd ~/projetos/Eulalio/rnaseq-control-plane/apps/api
 micromamba run -n rnaseq-control alembic upgrade head
 ```
 
+Seed the initial admin user and the two supported pipelines:
+
+```bash
+cd ~/projetos/Eulalio/rnaseq-control-plane/apps/api
+micromamba run -n rnaseq-control python scripts/seed_initial_data.py
+```
+
 Default development login after startup seed:
 
 - email: `admin@example.com`

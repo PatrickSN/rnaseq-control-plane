@@ -71,6 +71,45 @@ curl -s http://127.0.0.1:8000/api/pipelines \
 The response `{"detail":"Missing bearer token"}` means the route is protected
 and the request did not include the `Authorization` header.
 
+## Pipeline registration
+
+In the MVP, pipelines are not added from the web UI. The system seeds the two
+known pipeline records from `apps/api/app/db/init_db.py`:
+
+- `soja-iac`
+- `RNA-Seq-Arabidopsis`
+
+The seed uses `RNASEQ_PIPELINES_BASE_DIR` or `PIPELINES_ROOT` as the parent
+directory. On the target server, this should normally be:
+
+```bash
+RNASEQ_PIPELINES_BASE_DIR=~/pipelines
+```
+
+The expected pipeline directories are:
+
+```bash
+~/pipelines/soja-iac
+~/pipelines/RNA-Seq-Arabidopsis
+```
+
+If the Pipelines screen is empty after migrations, rerun the seed explicitly:
+
+```bash
+cd ~/projetos/Eulalio/rnaseq-control-plane/apps/api
+micromamba run -n rnaseq-control python scripts/seed_initial_data.py
+```
+
+Then verify through the protected API:
+
+```bash
+curl -s http://127.0.0.1:8000/api/pipelines \
+  -H "Authorization: Bearer <access_token>"
+```
+
+If this returns `[]`, check that the API process and the seed command are using
+the same `RNASEQ_DATABASE_URL`.
+
 ## Negative assumptions
 
 Agents and contributors must not assume:

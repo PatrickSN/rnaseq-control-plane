@@ -22,4 +22,4 @@ storage/runs/*
 .nextflow.log
 params.generated.yaml
 packages/contracts/openapi.json
-packages/contracts/rnaseq_contracts.egg-info/*
+*.egg-info/*
