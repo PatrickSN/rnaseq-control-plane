@@ -1,25 +1,67 @@
+# Variáveis de ambiente
+
 .env
 .env.*
 !.env.example
-__pycache__/
+
+# Ambientes virtuais Python
+
 .venv/
 .venv*/
+venv/
+env/
+
+# Python
+
+**pycache**/
+*.py[cod]
+*.pyo
+*.pyd
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
 .coverage
+.coverage.*
 htmlcov/
-*.pyc
-*.tsbuildinfo
+*.egg-info/
+
+# Node.js / TypeScript
+
 node_modules/
+*.tsbuildinfo
+coverage/
+
+# Next.js / Turbopack
+
 .next/
+out/
+.turbo/
+
+# Arquivos de build
+
 dist/
 build/
-coverage/
+
+# Execuções e arquivos gerados
+
 storage/runs/*
 !storage/runs/.gitkeep
-*.log
-.nextflow.log
 params.generated.yaml
 packages/contracts/openapi.json
-*.egg-info/*
+
+# Nextflow
+
+.nextflow/
+.nextflow.log*
+work/
+
+# Logs
+
+*.log
+
+# Sistema operacional e editores
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
