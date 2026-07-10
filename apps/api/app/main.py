@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import auth, pipelines, runs
@@ -36,12 +36,26 @@ def on_startup() -> None:
             init_db(db, settings)
 
 
+@app.get("/", tags=["system"])
+def root() -> dict[str, str]:
+    return {
+        "name": "rnaseq-control-plane",
+        "health": "/api/health",
+        "docs": "/docs",
+        "openapi": "/openapi.json",
+    }
+
+
 @app.get("/api/health", tags=["system"])
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> Response:
+    return Response(status_code=204)
+
+
 app.include_router(auth.router)
 app.include_router(pipelines.router)
 app.include_router(runs.router)
-

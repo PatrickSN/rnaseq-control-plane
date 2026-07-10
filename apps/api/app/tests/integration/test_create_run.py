@@ -30,6 +30,11 @@ def test_create_run_with_fake_runner(
     from app.models.entities import AuditEvent, Run, RunArtifact, RunParameter, RunTask
 
     with TestClient(main_module.app) as client:
+        root = client.get("/")
+        assert root.status_code == 200
+        assert root.json()["docs"] == "/docs"
+        assert client.get("/favicon.ico").status_code == 204
+
         login = client.post(
             "/api/auth/login",
             json={"email": "admin@example.com", "password": "admin12345"},

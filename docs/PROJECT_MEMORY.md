@@ -36,6 +36,41 @@ micromamba run -n rnaseq-control uvicorn app.main:app --host 0.0.0.0 --port 8000
 micromamba run -n rnaseq-control rnaseq pipelines list
 ```
 
+## API operation notes
+
+The FastAPI service should be started from the API app directory on the Linux
+server:
+
+```bash
+cd ~/projetos/Eulalio/rnaseq-control-plane/apps/api
+micromamba run -n rnaseq-control uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Expected unauthenticated endpoints:
+
+- `GET /` returns service discovery links for health, docs, and OpenAPI.
+- `GET /api/health` returns the API health payload.
+- `GET /docs` opens FastAPI Swagger UI.
+
+Protected API endpoints such as `GET /api/pipelines` and `GET /api/runs` require
+a bearer token. Authenticate first:
+
+```bash
+curl -s -X POST http://127.0.0.1:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"<password>"}'
+```
+
+Then call protected endpoints with:
+
+```bash
+curl -s http://127.0.0.1:8000/api/pipelines \
+  -H "Authorization: Bearer <access_token>"
+```
+
+The response `{"detail":"Missing bearer token"}` means the route is protected
+and the request did not include the `Authorization` header.
+
 ## Negative assumptions
 
 Agents and contributors must not assume:
